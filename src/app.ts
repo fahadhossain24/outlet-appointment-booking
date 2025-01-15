@@ -33,7 +33,7 @@ const limiter = rateLimit({
 });
 // app.use(limiter);
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (req, res) => {
   res.send('Hello and welcome to this server!');
 });
 
