@@ -33,10 +33,6 @@ const limiter = rateLimit({
 });
 // app.use(limiter);
 
-app.get('/', (req, res) => {
-  res.send('Hello and welcome to this server!');
-});
-
 // application middleware
 app.use('/v1', routers);
 
