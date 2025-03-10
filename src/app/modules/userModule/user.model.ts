@@ -28,13 +28,11 @@ const userSchema = new mongoose.Schema<IUser>(
     phone: {
       type: String,
       unique: true,
-      required: true,
     },
     password: {
       type: String,
       trim: true,
       minlength: [8, 'Password must be at least 8 characters'],
-      required: [true, 'Password is required!'],
     },
     isEmailVerified: {
       type: Boolean,

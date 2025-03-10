@@ -233,6 +233,10 @@ const bookingRescheduleById = async (req: Request, res: Response) => {
 
   const schedule = await scheduleServices.getScheduleByOutletId(booking.outlet.outletId as unknown as string);
 
+  if (!schedule || !schedule.daySlot) {
+    throw new CustomError.BadRequestError('No schedule found for the selected outlet.');
+  }
+
   const dayIndex = selectedDate.getDay();
 
   // Find the schedule entry for the selected day

@@ -133,15 +133,6 @@ outletSchema.index(
     phone: 'text',
     nidNumber: 'text',
     bankAccountNumber: 'text'
-  },
-  {
-    weights: {
-      name: 5,
-      email: 4,
-      phone: 4,
-      nidNumber: 3,
-      bankAccountNumber: 2
-    }
   }
 )
 
