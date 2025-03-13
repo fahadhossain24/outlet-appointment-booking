@@ -25,5 +25,11 @@ export default {
   referral_point: process.env.REFERRAL_POINT,
 
   // popular service document count
-  popular_service_document_count: process.env.POPULAR_SERVICE_DOCUMENT_COUNT
+  popular_service_document_count: process.env.POPULAR_SERVICE_DOCUMENT_COUNT,
+
+  // S3 bucket configuration
+  region: process.env.REGION,
+  access_key_ID: process.env.ACCESS_KEY_ID,
+  access_key_secret: process.env.SECRET_ACCESS_KEY,
+  bucket: process.env.BUCKET,
 };

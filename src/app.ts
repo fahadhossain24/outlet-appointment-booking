@@ -1,4 +1,4 @@
-import 'express-async-errors'; 
+import 'express-async-errors';
 import express, { Application, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import cors from 'cors';
@@ -11,6 +11,7 @@ import rateLimit from 'express-rate-limit';
 import notFound from './app/middlewares/notFound';
 import routers from './app/routers/version1';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
+import rootDesign from './app/middlewares/rootDesign';
 
 const app: Application = express();
 
@@ -35,6 +36,9 @@ const limiter = rateLimit({
 
 // application middleware
 app.use('/v1', routers);
+
+// send html design with a button 'click to see server health' and integrate an api to check server health
+app.get('/', rootDesign);
 
 app.get('/health_check', async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json({
