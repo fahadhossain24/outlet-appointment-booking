@@ -112,6 +112,7 @@ const getAllOutlets = async (req: Request, res: Response) => {
 
   const skip = (page - 1) * limit;
   const outlets = await outletServices.getAllOutlets(type as string, query as string, skip, limit);
+  console.log(outlets)
 
   const enrichedOutlets = await Promise.all(
     outlets.map(async (outlet) => {
@@ -220,8 +221,14 @@ const updateSpecificOutlet = async (req: Request, res: Response) => {
   }
 
   if (req.files && req.files.nidImage) {
-    const nidImagePath = await fileUploader(files as FileArray, `${outlet.type}-image`, 'nidImage');
+    const nidImagePath = await fileUploader(files as FileArray, `image`, 'nidImage');
     updateData.nidImage = nidImagePath;
+  }
+
+  if(req.files && req.files.profileImage){
+    const profileImagePath = await fileUploader(files as FileArray, `image`, 'profileImage');
+    console.log(profileImagePath)
+    updateData.profileImage = profileImagePath;
   }
 
   const updatedOutlet = await outletServices.updateSpecificOutlet(id, updateData);
