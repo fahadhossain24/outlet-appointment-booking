@@ -206,6 +206,7 @@ const retriveUpcommingBookingsByOutletId = async (req: Request, res: Response) =
   }
 
   const bookings = await bookingServices.getUpcommingBookingsByOutletId(outletId, date as string);
+  console.log(bookings)
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,

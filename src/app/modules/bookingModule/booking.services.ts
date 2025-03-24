@@ -70,7 +70,8 @@ const getUpcommingBookingsByOutletId = async (outletId: string, date: string) =>
       bookingDate.getDate() === newDate.getDate()
     );
   });
-  return filteredBookings;
+
+  return date ? filteredBookings : bookings;
 };
 
 // service for get booking by DateAndTime
