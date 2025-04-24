@@ -11,6 +11,8 @@ import Service from '../serviceModule/service.model';
 import notificationServices from '../notificationModule/notification.services';
 import createNotification from '../../../utils/notificationCreator';
 import feedbackServices from '../feedbackModule/feedback.services';
+import sendMail from '../../../utils/sendEmail';
+import config from '../../../config';
 
 // controller for create new booking
 const createBooking = async (req: Request, res: Response) => {
@@ -74,7 +76,50 @@ const createBooking = async (req: Request, res: Response) => {
   }
 
   // create notification for new booking creation
-  createNotification(bookingData.user.userId, bookingData.user.name, `New appointment booked in ${bookingData.outlet.name}, time at ${booking.createdAt}`);
+  createNotification(
+    bookingData.user.userId,
+    bookingData.user.name,
+    `New appointment booked in ${bookingData.outlet.name}, time at ${booking.createdAt}`,
+  );
+
+  // send notify mail to outlet owner email address
+  const outlet = await outletServices.getSpecificOutlet(bookingData.outlet.outletId);
+  if (outlet) {
+    // send mail to outlet owner
+    // send verification mail
+    const textContent = `
+Hello ${outlet.name},
+
+You have received a new booking at your outlet.
+
+Booking Details:
+- Customer Name: ${bookingData.user.name}
+- Customer Address: ${bookingData.user.address}
+- Service: ${bookingData.service.name}
+- Booking Date: ${new Date(bookingData.date).toLocaleDateString()}
+- Booking Time: ${bookingData.time}
+- Home Service: ${bookingData.homeService ? 'Yes' : 'No'}
+- Payment Type: ${bookingData.paymentType}
+- Payment Status: ${bookingData.paymentStatus}
+- Transaction ID: ${bookingData.paymentSource.transactionId}
+
+Outlet Address:
+${bookingData.outlet.address}
+
+Please ensure everything is ready for the appointment.
+
+Best regards,
+Your Booking System Team
+`;
+
+    const mailOptions = {
+      from: config.gmail_app_user as string,
+      to: outlet.email,
+      subject: `New booking in from ${bookingData.user.name} at ${new Date(bookingData.date).toLocaleDateString()} and time is ${bookingData.time}`,
+      text: textContent,
+    };
+    sendMail(mailOptions);
+  }
 
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,
@@ -200,13 +245,13 @@ const retriveUpcommingBookingsByUserId = async (req: Request, res: Response) => 
 // controller for retrive upcomming bookings by outletId
 const retriveUpcommingBookingsByOutletId = async (req: Request, res: Response) => {
   const { outletId } = req.params;
-  const {date} = req.query
+  const { date } = req.query;
   if (!outletId) {
     throw new CustomError.BadRequestError('Missing userId in request params!');
   }
 
   const bookings = await bookingServices.getUpcommingBookingsByOutletId(outletId, date as string);
-  console.log(bookings)
+  console.log(bookings);
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -297,7 +342,7 @@ const retriveAllBookings = async (req: Request, res: Response) => {
     },
     data: bookings,
   });
-}
+};
 
 export default {
   createBooking,
@@ -307,5 +352,5 @@ export default {
   retriveUpcommingBookingsByUserId,
   retriveUpcommingBookingsByOutletId,
   bookingRescheduleById,
-  retriveAllBookings
+  retriveAllBookings,
 };

@@ -22,7 +22,7 @@ const getAllUser = async (searchQuery: string, role: string, skip: number, limit
     query.$text = { $search: searchQuery };
   }
   if (role) {
-    query.roles = {$in: [role]};
+    query.roles = { $in: [role] };
   }
 
   return await User.find(query).sort('-createdAt').skip(skip).limit(limit).select('-password -verification');
@@ -51,5 +51,5 @@ export default {
   getSpecificUserByEmail,
   updateSpecificUser,
   deleteSpecificUser,
-  getAllUser
+  getAllUser,
 };

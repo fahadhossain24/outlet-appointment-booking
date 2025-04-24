@@ -23,8 +23,8 @@ const serviceSchema = new mongoose.Schema<IService>(
       amount: Number,
       currency: {
         type: String,
-        enum: ['USD'],
-        default: 'USD',
+        enum: ['KWD'],
+        default: 'KWD',
       },
     },
     isDiscount: {
@@ -42,8 +42,8 @@ const serviceSchema = new mongoose.Schema<IService>(
       amount: Number,
       currency: {
         type: String,
-        enum: ['USD'],
-        default: 'USD',
+        enum: ['KWD'],
+        default: 'KWD',
       },
     },
     image: String,

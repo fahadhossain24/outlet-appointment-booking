@@ -220,6 +220,10 @@ const updateSpecificOutlet = async (req: Request, res: Response) => {
     throw new CustomError.NotFoundError('Outlet not found!');
   }
 
+  if(updateData.password || updateData.email){
+    throw new CustomError.BadRequestError("Can't update password or email by the API")
+  }
+
   if (req.files && req.files.nidImage) {
     const nidImagePath = await fileUploader(files as FileArray, `image`, 'nidImage');
     updateData.nidImage = nidImagePath;

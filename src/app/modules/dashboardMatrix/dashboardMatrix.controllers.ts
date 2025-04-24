@@ -8,6 +8,8 @@ import Feedback from '../feedbackModule/feedback.model';
 
 // Controller for retrieving admin dashboard matrix
 const retriveDashboardMatrix = async (req: Request, res: Response) => {
+  const year = parseInt(req.query.year as string) || new Date().getFullYear();
+
   const totalUsers = await User.countDocuments({ role: 'user' });
   const totalOutlets = await Outlet.countDocuments({ role: 'outlet' });
 
@@ -19,18 +21,24 @@ const retriveDashboardMatrix = async (req: Request, res: Response) => {
       },
     },
   ]);
+
   const totalEarnings = totalEarningsResult[0]?.totalEarnings || 0;
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-  // Initialize data structures
   const userStats = Array(12).fill(0);
   const outletStats = Array(12).fill(0);
   const earningStats = Array(12).fill(0);
 
-  // Fetch total users and group by month
+  // Users grouped by month & filtered by year
   const usersByMonth = await User.aggregate([
-    { $match: { role: 'user' } },
+    {
+      $match: {
+        role: 'user',
+        $expr: {
+          $eq: [{ $year: '$createdAt' }, year],
+        },
+      },
+    },
     {
       $group: {
         _id: { $month: '$createdAt' },
@@ -38,14 +46,20 @@ const retriveDashboardMatrix = async (req: Request, res: Response) => {
       },
     },
   ]);
-
   usersByMonth.forEach(({ _id, count }) => {
     userStats[_id - 1] = count;
   });
 
-  // Fetch total outlets and group by month
+  // Outlets grouped by month & filtered by year
   const outletsByMonth = await Outlet.aggregate([
-    { $match: { role: 'outlet' } },
+    {
+      $match: {
+        role: 'outlet',
+        $expr: {
+          $eq: [{ $year: '$createdAt' }, year],
+        },
+      },
+    },
     {
       $group: {
         _id: { $month: '$createdAt' },
@@ -53,13 +67,19 @@ const retriveDashboardMatrix = async (req: Request, res: Response) => {
       },
     },
   ]);
-
   outletsByMonth.forEach(({ _id, count }) => {
     outletStats[_id - 1] = count;
   });
 
-  // Fetch total earnings and group by month
+  // Earnings grouped by month & filtered by year
   const earningsByMonth = await Earning.aggregate([
+    {
+      $match: {
+        $expr: {
+          $eq: [{ $year: '$createdAt' }, year],
+        },
+      },
+    },
     {
       $group: {
         _id: { $month: '$createdAt' },
@@ -67,43 +87,44 @@ const retriveDashboardMatrix = async (req: Request, res: Response) => {
       },
     },
   ]);
-  console.log(earningsByMonth);
   earningsByMonth.forEach(({ _id, totalEarning }) => {
     earningStats[_id - 1] = totalEarning;
   });
 
-  // Calculate percentages for each section
-  const maxUsers = Math.max(...userStats) || 1; // Avoid division by zero
+  // Calculate max values for percentage calculation
+  const maxUsers = Math.max(...userStats) || 1;
   const maxEarnings = Math.max(...earningStats) || 1;
   const maxOutlets = Math.max(...outletStats) || 1;
 
-  // retrive feedback
-  const feedbacks = await Feedback.find().sort('-createdAt').populate({
-    path: 'user.userId',
-    select: 'phone, image, email'
-  }).populate({
-    path: 'outlet.outletId',
-    select: 'email phone image'
-  })
+  // Retrieve feedbacks (no filter by year)
+  const feedbacks = await Feedback.find()
+    .sort('-createdAt')
+    .populate({
+      path: 'user.userId',
+      select: 'phone image email',
+    })
+    .populate({
+      path: 'outlet.outletId',
+      select: 'email phone image',
+    });
 
   const responseData = {
     totalUsers,
     totalOutlets,
-    totalEarnings,
+    maxEarnings,
     chartData: {
       months,
-      userStatistics: userStats.map((value) => (value / maxUsers) * 100), // Percentage values for users
-      earningStatistics: earningStats.map((value) => (value / maxEarnings) * 100), // Percentage values for earnings
-      outletStatistics: outletStats.map((value) => (value / maxOutlets) * 100), // Percentage values for outlets
+      userStatistics: userStats.map((value) => (value / maxUsers) * 100),
+      earningStatistics: earningStats.map((value) => (value / maxEarnings) * 100),
+      outletStatistics: outletStats.map((value) => (value / maxOutlets) * 100),
     },
     feedbacks,
   };
 
-  // Send the response
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     status: 'success',
-    message: 'Dashboard metrics retrieved successfully!',
+    message: `Dashboard metrics for year ${year} retrieved successfully!`,
     data: responseData,
   });
 };
